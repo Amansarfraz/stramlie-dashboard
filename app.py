@@ -1,48 +1,79 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
 
-# Page config
-st.set_page_config(page_title="Dashboard", layout="wide")
+# -------------------------------
+# PAGE CONFIG
+# -------------------------------
+st.set_page_config(page_title="Student Dashboard", layout="wide")
 
-# Title
-st.title("📊 My Streamlit Dashboard")
+st.title("📊 Student Performance Dashboard")
+st.write("Simple student marks analysis dashboard")
 
-# Sidebar
-st.sidebar.header("Filter Options")
-
-# Dummy data
+# -------------------------------
+# DATA
+# -------------------------------
 data = pd.DataFrame({
-    "Category": ["A", "B", "C", "A", "B", "C"],
-    "Values": [10, 20, 15, 25, 30, 35]
+    "Student": ["Ali", "Ahmed", "Sara", "Ayesha", "Usman"],
+    "Math": [80, 55, 90, 70, 60],
+    "English": [75, 65, 88, 72, 58],
+    "Science": [85, 60, 92, 68, 66]
 })
 
-# Sidebar filter
-category = st.sidebar.selectbox("Select Category", data["Category"].unique())
+# -------------------------------
+# SIDEBAR
+# -------------------------------
+st.sidebar.header("Select Student")
 
-# Filter data
-filtered_data = data[data["Category"] == category]
+selected_student = st.sidebar.selectbox(
+    "Choose Student",
+    data["Student"]
+)
 
-# Metrics
+# Filter student row
+student_data = data[data["Student"] == selected_student].iloc[0]
+
+# -------------------------------
+# CALCULATIONS (FIXED)
+# -------------------------------
+total = student_data["Math"] + student_data["English"] + student_data["Science"]
+avg = total / 3
+
+# -------------------------------
+# METRICS
+# -------------------------------
+st.subheader("📌 Performance Summary")
+
 col1, col2, col3 = st.columns(3)
 
-col1.metric("Total", filtered_data["Values"].sum())
-col2.metric("Average", round(filtered_data["Values"].mean(), 2))
-col3.metric("Max", filtered_data["Values"].max())
+col1.metric("Total Marks", total)
+col2.metric("Average Marks", round(avg, 2))
+col3.metric("Subjects", 3)
 
-# Chart
-st.subheader("📈 Chart")
-st.bar_chart(filtered_data.set_index("Category"))
+# -------------------------------
+# CHART DATA
+# -------------------------------
+st.subheader("📈 Subject-wise Marks")
 
-# Table
-st.subheader("📋 Data Table")
-st.dataframe(filtered_data)
+chart_data = pd.DataFrame({
+    "Subjects": ["Math", "English", "Science"],
+    "Marks": [student_data["Math"], student_data["English"], student_data["Science"]]
+})
 
-# User input
-st.subheader("🧮 Add New Data")
+st.bar_chart(chart_data.set_index("Subjects"))
 
-new_category = st.selectbox("Category", ["A", "B", "C"])
-new_value = st.number_input("Value", min_value=0)
+# -------------------------------
+# TABLE
+# -------------------------------
+st.subheader("📋 Student Details")
 
-if st.button("Add Data"):
-    st.success(f"Added {new_category} with value {new_value}")
+st.dataframe(pd.DataFrame([student_data]))
+
+# -------------------------------
+# RESULT MESSAGE
+# -------------------------------
+if avg >= 80:
+    st.success("🌟 Excellent Performance")
+elif avg >= 60:
+    st.info("👍 Good Performance")
+else:
+    st.warning("⚠️ Need Improvement")
